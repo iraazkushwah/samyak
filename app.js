@@ -119,6 +119,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const designCornerSize = document.getElementById('design-corner-size');
     const designCornerSizeVal = document.getElementById('design-corner-size-val');
 
+    const designDividerColor = document.getElementById('design-divider-color');
+    const designDividerStyle = document.getElementById('design-divider-style');
+    const designDividerThick = document.getElementById('design-divider-thick');
+    const designDividerThickVal = document.getElementById('design-divider-thick-val');
+
+    const designEndStarSymbol = document.getElementById('design-end-star-symbol');
+    const designEndStarColor = document.getElementById('design-end-star-color');
+    const designEndStarSize = document.getElementById('design-end-star-size');
+    const designEndStarSizeVal = document.getElementById('design-end-star-size-val');
+    const designEndStarPulse = document.getElementById('design-end-star-pulse');
+
     const designPageNumColor = document.getElementById('design-page-num-color');
     const designPageNumPlace = document.getElementById('design-page-num-place');
     const designPageNumPrefix = document.getElementById('design-page-num-prefix');
@@ -183,7 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
         pageNumColor: '',
         
         // Header Logo
-        headerLogoSrc: ''
+        headerLogoSrc: '',
+
+        // Two-column Divider
+        dividerColor: '',
+        dividerStyle: 'dashed',
+        dividerThickness: '1.5',
+
+        // End Star Divider
+        endStarSymbol: '✦',
+        endStarColor: '',
+        endStarSize: '18',
+        endStarPulse: true
     };
 
     // 2.1 Social Settings State
@@ -239,14 +261,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Debounce timer to avoid lagging when typing rapidly
+    // Debounce timers to avoid lagging when typing rapidly
     let renderTimeout = null;
     function debouncedRenderAndSave() {
         clearTimeout(renderTimeout);
         renderTimeout = setTimeout(() => {
             renderPreview();
             saveWorkspaceToLocalStorage();
-        }, 200); // 200ms debounce for much faster typing feedback and responsive preview
+        }, 200); // 200ms debounce for immediate action inputs (themes, sliders, toggles)
+    }
+
+    let typingTimeout = null;
+    function debouncedRenderAndSaveTyping() {
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            renderPreview();
+            saveWorkspaceToLocalStorage();
+        }, 800); // 800ms debounce specifically for typing to ensure fluid, zero-lag input experience
     }
 
     // Live update when writing on content pages
@@ -254,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activePageIndex > 0) {
             pagesData[activePageIndex].text = pageContentInput.value;
             updateStats();
-            debouncedRenderAndSave();
+            debouncedRenderAndSaveTyping();
         }
     });
 
@@ -265,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pagesData[0].title = docTitleInput.value;
                 pagesData[0].tagline = docTaglineInput.value;
                 pagesData[0].subtitle = docSubtitleInput.value;
-                debouncedRenderAndSave();
+                debouncedRenderAndSaveTyping();
             }
         });
     });
@@ -277,13 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastPageData.title = lastTitleInput.value;
                 lastPageData.subtitle = lastSubtitleInput.value;
                 lastPageData.tagline = lastTaglineInput.value;
-                debouncedRenderAndSave();
+                debouncedRenderAndSaveTyping();
             }
         });
     });
 
     docThemeInput.addEventListener('change', () => {
-        if (activePageIndex === 0) {
+        if (pagesData[0]) {
             pagesData[0].theme = docThemeInput.value;
             applyTheme(docThemeInput.value);
             renderPreview();
@@ -1471,6 +1502,51 @@ document.addEventListener('DOMContentLoaded', () => {
         saveWorkspaceToLocalStorage();
     });
 
+    // Group 3.5: Two-Column Divider Customizer
+    designDividerColor.addEventListener('input', (e) => {
+        customDesignSettings.dividerColor = e.target.value;
+        document.documentElement.style.setProperty('--custom-divider-color', e.target.value);
+        saveWorkspaceToLocalStorage();
+    });
+    designDividerStyle.addEventListener('change', (e) => {
+        customDesignSettings.dividerStyle = e.target.value;
+        document.documentElement.style.setProperty('--custom-divider-style', e.target.value);
+        saveWorkspaceToLocalStorage();
+    });
+    designDividerThick.addEventListener('input', (e) => {
+        customDesignSettings.dividerThickness = e.target.value;
+        designDividerThickVal.textContent = `${e.target.value}px`;
+        document.documentElement.style.setProperty('--custom-divider-thickness', `${e.target.value}px`);
+        saveWorkspaceToLocalStorage();
+    });
+
+    // Group 3.6: End Star Divider Customizer
+    designEndStarSymbol.addEventListener('change', (e) => {
+        customDesignSettings.endStarSymbol = e.target.value;
+        renderPreview();
+        saveWorkspaceToLocalStorage();
+    });
+    designEndStarColor.addEventListener('input', (e) => {
+        customDesignSettings.endStarColor = e.target.value;
+        document.documentElement.style.setProperty('--custom-end-star-color', e.target.value);
+        const r = parseInt(e.target.value.substring(1, 3), 16);
+        const g = parseInt(e.target.value.substring(3, 5), 16);
+        const b = parseInt(e.target.value.substring(5, 7), 16);
+        document.documentElement.style.setProperty('--custom-end-star-shadow', `rgba(${r}, ${g}, ${b}, 0.35)`);
+        saveWorkspaceToLocalStorage();
+    });
+    designEndStarSize.addEventListener('input', (e) => {
+        customDesignSettings.endStarSize = e.target.value;
+        designEndStarSizeVal.textContent = `${e.target.value}px`;
+        document.documentElement.style.setProperty('--custom-end-star-size', `${e.target.value}px`);
+        saveWorkspaceToLocalStorage();
+    });
+    designEndStarPulse.addEventListener('change', (e) => {
+        customDesignSettings.endStarPulse = e.target.checked;
+        document.documentElement.style.setProperty('--custom-end-star-animation', e.target.checked ? 'pulseStar 3s ease-in-out infinite' : 'none');
+        saveWorkspaceToLocalStorage();
+    });
+
     // Group 4: Pagination (Requires live re-render for layout prefix/positioning changes)
     designPageNumColor.addEventListener('input', (e) => {
         customDesignSettings.pageNumColor = e.target.value;
@@ -1538,6 +1614,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--custom-topic-border-color', secondary);
         document.documentElement.style.setProperty('--custom-inner-border-color', secondary);
         document.documentElement.style.setProperty('--custom-corner-color', secondary);
+        document.documentElement.style.setProperty('--custom-divider-color', secondary);
+        document.documentElement.style.setProperty('--custom-end-star-color', secondary);
 
         // Inputs update
         designSectionBg.value = primary;
@@ -1546,6 +1624,8 @@ document.addEventListener('DOMContentLoaded', () => {
         designTopicBorder.value = secondary;
         designInnerBorder.value = secondary;
         designCornerColor.value = secondary;
+        designDividerColor.value = secondary;
+        designEndStarColor.value = secondary;
         designPageNumColor.value = primary;
 
         customDesignSettings.pageNumColor = primary;
@@ -1555,17 +1635,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save current user interface input values into pagesData array before switching
     function saveCurrentInputState() {
+        if (pagesData[0]) {
+            pagesData[0].theme = docThemeInput.value;
+        }
         if (activePageIndex === 0) {
             pagesData[0].title = docTitleInput.value;
             pagesData[0].tagline = docTaglineInput.value;
             pagesData[0].subtitle = docSubtitleInput.value;
-            pagesData[0].theme = docThemeInput.value;
         } else if (activePageIndex === pagesData.length) {
             lastPageData.title = lastTitleInput.value;
             lastPageData.subtitle = lastSubtitleInput.value;
             lastPageData.tagline = lastTaglineInput.value;
         } else {
-            pagesData[activePageIndex].text = pageContentInput.value;
+            if (pagesData[activePageIndex]) {
+                pagesData[activePageIndex].text = pageContentInput.value;
+            }
         }
     }
 
@@ -1576,6 +1660,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Shift active index
         activePageIndex = index;
+
+        // 2.5 Sync global theme dropdown
+        if (pagesData[0]) {
+            docThemeInput.value = pagesData[0].theme;
+        }
 
         // 3. Render and sync active panel
         renderTabsList();
@@ -1599,7 +1688,6 @@ document.addEventListener('DOMContentLoaded', () => {
             docTitleInput.value = pagesData[0].title;
             docTaglineInput.value = pagesData[0].tagline;
             docSubtitleInput.value = pagesData[0].subtitle;
-            docThemeInput.value = pagesData[0].theme;
             applyTheme(pagesData[0].theme);
         } else if (index === lastTabIdx) {
             // Display Last Page controls
@@ -1719,17 +1807,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tab.addEventListener('click', () => switchActivePage(idx));
             pageTabsList.appendChild(tab);
         });
-
-        // Add End Page (Last Page) tab
-        const lastTabIdx = pagesData.length;
-        const lastTab = document.createElement('div');
-        lastTab.className = 'page-tab';
-        if (activePageIndex === lastTabIdx) {
-            lastTab.classList.add('active');
-        }
-        lastTab.textContent = 'End Page';
-        lastTab.addEventListener('click', () => switchActivePage(lastTabIdx));
-        pageTabsList.appendChild(lastTab);
     }
 
     // 5. PARSER & HTML BUILDER
@@ -1888,6 +1965,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 continue;
             }
 
+            // 0.6 THANK YOU BOX DETECTOR / STAR DIVIDER
+            if (trimmed === '[thankyou]' || trimmed === '***' || trimmed === '* * *' || trimmed === '✦ ✦ ✦') {
+                blocks.push({
+                    type: 'thankyou',
+                    markdown: line
+                });
+                continue;
+            }
+
             const cleanLine = trimmed.replace(/[^a-zA-Z0-9\u0900-\u097F]/g, '').trim();
 
             // 1. SECTION BAR DETECTOR
@@ -1982,6 +2068,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         return attrs;
+    }
+
+    // Helper to build the premium magazine end star divider (***)
+    function createEndDividerElement() {
+        const dividerContainer = document.createElement('div');
+        dividerContainer.className = 'end-page-divider';
+        
+        const sym = customDesignSettings.endStarSymbol || '✦';
+        
+        const star1 = document.createElement('span');
+        star1.className = 'star-symbol';
+        star1.textContent = sym;
+        
+        const star2 = document.createElement('span');
+        star2.className = 'star-symbol';
+        star2.textContent = sym;
+        
+        const star3 = document.createElement('span');
+        star3.className = 'star-symbol';
+        star3.textContent = sym;
+        
+        dividerContainer.appendChild(star1);
+        dividerContainer.appendChild(star2);
+        dividerContainer.appendChild(star3);
+        
+        return dividerContainer;
     }
 
     function renderBlockToNode(block) {
@@ -2288,24 +2400,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return div;
         }
         
-        // 4.96 THANK YOU BOX RENDER
+        // 4.96 END DIVIDER (***) RENDER
         else if (block.type === 'thankyou') {
-            const thankyouBox = document.createElement('div');
-            thankyouBox.className = 'thankyou-box';
-            
-            const h1 = document.createElement('h1');
-            h1.textContent = lastPageData.title;
-            
-            const h2 = document.createElement('h2');
-            h2.textContent = lastPageData.subtitle;
-            
-            const p = document.createElement('p');
-            p.textContent = lastPageData.tagline;
-            
-            thankyouBox.appendChild(h1);
-            thankyouBox.appendChild(h2);
-            thankyouBox.appendChild(p);
-            return thankyouBox;
+            return createEndDividerElement();
         }
         
         // 5. REGULAR BODY PARAGRAPH RENDER
@@ -2464,7 +2561,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return lineHeight * count;
                 }
             case 'thankyou':
-                return 160;
+                return 60;
             case 'image':
                 return 220; // conservative estimate for image height
             case 'table':
@@ -2546,18 +2643,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullContentMarkdown = pagesData.slice(1).map(p => p.text).join('\n');
         const blocks = parseTextToBlocks(fullContentMarkdown);
         
-        // Append special inline thank you box block at the end
-        blocks.push({
-            type: 'thankyou',
-            markdown: '[thankyou]',
-            id: 'thankyou'
-        });
+        // Append special star divider block at the end if not already present in markdown text
+        const hasThankYou = blocks.some(b => b.type === 'thankyou');
+        if (!hasThankYou) {
+            blocks.push({
+                type: 'thankyou',
+                markdown: '***',
+                id: 'thankyou'
+            });
+        }
 
-        // Assign original unique IDs to blocks for drag-and-drop tracking
+        // Assign original unique IDs to blocks for drag-and-drop tracking (all blocks, including thankyou!)
         blocks.forEach((block, idx) => {
-            if (block.type !== 'thankyou') {
-                block.id = idx;
-            }
+            block.id = idx;
         });
 
         let currentVisualPageNum = 1;
@@ -2816,8 +2914,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Only push to currentPageMarkdownLines if we didn't already push and clear it in splitSuccess, and not for thankyou block
-            if (block.type !== 'thankyou' && (currentPageStruct.contentElement.contains(node) || (activeBulletListElement && activeBulletListElement.contains(node)))) {
+            // Only push to currentPageMarkdownLines if we didn't already push and clear it in splitSuccess
+            if (currentPageStruct.contentElement.contains(node) || (activeBulletListElement && activeBulletListElement.contains(node))) {
                 currentPageMarkdownLines.push(block.markdown);
             }
         }
@@ -3089,22 +3187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const endContent = document.createElement('div');
         endContent.className = 'end-page-content';
 
-        const thankyouBox = document.createElement('div');
-        thankyouBox.className = 'thankyou-box';
-
-        const h1 = document.createElement('h1');
-        h1.textContent = lastPageData.title;
-
-        const h2 = document.createElement('h2');
-        h2.textContent = lastPageData.subtitle;
-
-        const p = document.createElement('p');
-        p.textContent = lastPageData.tagline;
-
-        thankyouBox.appendChild(h1);
-        thankyouBox.appendChild(h2);
-        thankyouBox.appendChild(p);
-
+        const thankyouBox = createThankYouBoxElement();
         endContent.appendChild(thankyouBox);
 
         innerBorder.appendChild(endContent);
@@ -3440,6 +3523,27 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--custom-inner-border-thickness', `${customDesignSettings.borderThick || 1}px`);
         document.documentElement.style.setProperty('--custom-corner-size', `${customDesignSettings.cornerSize || 22}px`);
 
+        // Two-column divider variables update
+        document.documentElement.style.setProperty('--custom-divider-color', customDesignSettings.dividerColor || 'var(--secondary-color)');
+        document.documentElement.style.setProperty('--custom-divider-style', customDesignSettings.dividerStyle || 'dashed');
+        document.documentElement.style.setProperty('--custom-divider-thickness', `${customDesignSettings.dividerThickness || 1.5}px`);
+
+        // End star divider variables
+        const esc = customDesignSettings.endStarColor || 'var(--secondary-color)';
+        document.documentElement.style.setProperty('--custom-end-star-color', esc);
+        document.documentElement.style.setProperty('--custom-end-star-size', `${customDesignSettings.endStarSize || 18}px`);
+        document.documentElement.style.setProperty('--custom-end-star-animation', (customDesignSettings.endStarPulse !== false) ? 'pulseStar 3s ease-in-out infinite' : 'none');
+        
+        // Hex to RGBA for shadow
+        if (esc.startsWith('#') && esc.length === 7) {
+            const r = parseInt(esc.substring(1, 3), 16);
+            const g = parseInt(esc.substring(3, 5), 16);
+            const b = parseInt(esc.substring(5, 7), 16);
+            document.documentElement.style.setProperty('--custom-end-star-shadow', `rgba(${r}, ${g}, ${b}, 0.35)`);
+        } else {
+            document.documentElement.style.setProperty('--custom-end-star-shadow', 'rgba(197, 162, 83, 0.35)');
+        }
+
         // Sync inputs UI
         designSectionBg.value = customDesignSettings.sectionBg || '#850f0f';
         designSectionAccent.value = customDesignSettings.sectionAccent || '#1d6ea5';
@@ -3464,6 +3568,19 @@ document.addEventListener('DOMContentLoaded', () => {
         designBorderThickVal.textContent = `${customDesignSettings.borderThick || 1}px`;
         designCornerSize.value = customDesignSettings.cornerSize || '22';
         designCornerSizeVal.textContent = `${customDesignSettings.cornerSize || 22}px`;
+
+        // Sync two-column divider UI inputs
+        designDividerColor.value = customDesignSettings.dividerColor || '#c5a353';
+        designDividerStyle.value = customDesignSettings.dividerStyle || 'dashed';
+        designDividerThick.value = customDesignSettings.dividerThickness || '1.5';
+        designDividerThickVal.textContent = `${customDesignSettings.dividerThickness || 1.5}px`;
+
+        // Sync end star divider UI inputs
+        designEndStarSymbol.value = customDesignSettings.endStarSymbol || '✦';
+        designEndStarColor.value = customDesignSettings.endStarColor || '#c5a353';
+        designEndStarSize.value = customDesignSettings.endStarSize || '18';
+        designEndStarSizeVal.textContent = `${customDesignSettings.endStarSize || 18}px`;
+        designEndStarPulse.checked = (customDesignSettings.endStarPulse !== false);
 
         designPageNumColor.value = customDesignSettings.pageNumColor || '#850f0f';
         designPageNumPlace.value = customDesignSettings.pageNumPlacement || 'bottom-center';
@@ -3495,6 +3612,27 @@ document.addEventListener('DOMContentLoaded', () => {
             customDesignSettings = state.customDesignSettings || customDesignSettings;
             if (customDesignSettings.sectionAlignment === undefined) {
                 customDesignSettings.sectionAlignment = 'left';
+            }
+            if (customDesignSettings.dividerColor === undefined) {
+                customDesignSettings.dividerColor = '';
+            }
+            if (customDesignSettings.dividerStyle === undefined) {
+                customDesignSettings.dividerStyle = 'dashed';
+            }
+            if (customDesignSettings.dividerThickness === undefined) {
+                customDesignSettings.dividerThickness = '1.5';
+            }
+            if (customDesignSettings.endStarSymbol === undefined) {
+                customDesignSettings.endStarSymbol = '✦';
+            }
+            if (customDesignSettings.endStarColor === undefined) {
+                customDesignSettings.endStarColor = '';
+            }
+            if (customDesignSettings.endStarSize === undefined) {
+                customDesignSettings.endStarSize = '18';
+            }
+            if (customDesignSettings.endStarPulse === undefined) {
+                customDesignSettings.endStarPulse = true;
             }
             socialSettings = state.socialSettings || { telegramText: '@samyak', youtubeText: 'Samyak Coaching' };
             if (socialSettings.fontSize === undefined) socialSettings.fontSize = 11;
@@ -3763,7 +3901,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ## 🔶 मेघा सोनी को राष्ट्रीय रत्न सम्मान 2026
 • जयपुर की मेघा सोनी को राष्ट्रीय रत्न सम्मान- 2026 से सम्मानित किया गया।
-• मेघा को यह सम्मान नई दिल्ली स्थित भारत मंडपम में आयोजित समारोह में दिया गया$.
+• मेघा को यह सम्मान नई दिल्ली स्थित भारत मंडपम में आयोजित समारोह में दिया गया।
 • लग्जरी सिल्वर ज्वैलरी ब्रांड श्रेणी में उत्कृष्ट योगदान के लिए उन्हें यह प्रतिष्ठित सम्मान प्रदान किया गया।`
             }
         ];
@@ -3861,6 +3999,33 @@ document.addEventListener('DOMContentLoaded', () => {
         designPageNumSize.value = '15';
         designPageNumSizeVal.textContent = '15px';
         customDesignSettings.pageNumSize = '15';
+
+        // Reset Two-column divider settings
+        customDesignSettings.dividerColor = '';
+        customDesignSettings.dividerStyle = 'dashed';
+        customDesignSettings.dividerThickness = '1.5';
+        designDividerColor.value = '#c5a353';
+        designDividerStyle.value = 'dashed';
+        designDividerThick.value = '1.5';
+        designDividerThickVal.textContent = '1.5px';
+        document.documentElement.style.setProperty('--custom-divider-color', 'var(--secondary-color)');
+        document.documentElement.style.setProperty('--custom-divider-style', 'dashed');
+        document.documentElement.style.setProperty('--custom-divider-thickness', '1.5px');
+
+        // Reset End Star Divider settings
+        customDesignSettings.endStarSymbol = '✦';
+        customDesignSettings.endStarColor = '';
+        customDesignSettings.endStarSize = '18';
+        customDesignSettings.endStarPulse = true;
+        designEndStarSymbol.value = '✦';
+        designEndStarColor.value = '#c5a353';
+        designEndStarSize.value = '18';
+        designEndStarSizeVal.textContent = '18px';
+        designEndStarPulse.checked = true;
+        document.documentElement.style.setProperty('--custom-end-star-color', 'var(--secondary-color)');
+        document.documentElement.style.setProperty('--custom-end-star-size', '18px');
+        document.documentElement.style.setProperty('--custom-end-star-animation', 'pulseStar 3s ease-in-out infinite');
+        document.documentElement.style.setProperty('--custom-end-star-shadow', 'rgba(197, 162, 83, 0.35)');
 
         customDesignSettings.headerLogoSrc = '';
         if (headerLogoFileInput) headerLogoFileInput.value = '';
@@ -3962,23 +4127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 2. End Page Redirect (when clicking the inline Thank You box)
-        if (e.target.closest('.thankyou-box')) {
-            switchActivePage(pagesData.length);
-            if (e.target.closest('.thankyou-box h1')) {
-                lastTitleInput.focus();
-                lastTitleInput.select();
-            } else if (e.target.closest('.thankyou-box h2')) {
-                lastSubtitleInput.focus();
-                lastSubtitleInput.select();
-            } else if (e.target.closest('.thankyou-box p')) {
-                lastTaglineInput.focus();
-                lastTaglineInput.select();
-            } else {
-                lastTitleInput.focus();
-            }
-            return;
-        }
+        // 2. Star Divider click is handled naturally as a content page element
 
         // 3. Content Pages Redirect & Substring Sync Highlight
         // Switch editing panel to corresponding content page
@@ -4242,6 +4391,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 2. Parse into blocks
         const blocks = parseTextToBlocks(fullContent);
+        
+        // If thank you is not in markdown, it is auto-appended at the end in renderPreview.
+        // We must append it here as well so it's part of the blocks being reordered!
+        const hasThankYou = blocks.some(b => b.type === 'thankyou');
+        if (!hasThankYou) {
+            blocks.push({
+                type: 'thankyou',
+                markdown: '***',
+                id: 'thankyou'
+            });
+        }
         
         // Assign original IDs to match drag states
         blocks.forEach((b, idx) => {

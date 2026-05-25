@@ -65,6 +65,10 @@
     
     --custom-corner-size: 22px;
     --custom-corner-color: var(--secondary-color);
+
+    --custom-divider-thickness: 1.5px;
+    --custom-divider-style: dashed;
+    --custom-divider-color: var(--secondary-color);
 }
 
 /* Theme overrides */
@@ -1419,47 +1423,39 @@ strong {
     height: 100%;
 }
 
-.thankyou-box {
-    background-color: var(--bg-cream);
-    border: 3px double var(--secondary-color); /* Gold/Secondary in active theme is gold! */
-    border-radius: 8px;
-    padding: 20px 40px;
-    width: 90%;
-    max-width: 500px;
-    margin: 15px auto 10px auto;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+/* Highly visible magazine end star divider (***) */
+.end-page-divider {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 15px;
+    margin: 25px auto;
+    width: 100%;
+    color: var(--custom-end-star-color, var(--secondary-color, #c5a353));
+    user-select: none;
+    box-sizing: border-box;
 }
 
-.thankyou-box h1 {
-    font-family: 'Product Sans', 'Google Sans', 'Poppins', 'Segoe UI', sans-serif;
-    font-size: 32px;
-    font-weight: 800; /* Bold! */
-    color: var(--primary-color);
-    letter-spacing: -0.5px !important;
-    margin-bottom: 5px;
+
+
+.end-page-divider .star-symbol {
+    font-size: var(--custom-end-star-size, 18px);
+    color: var(--custom-end-star-color, var(--secondary-color, #c5a353));
+    animation: var(--custom-end-star-animation, pulseStar 3s ease-in-out infinite);
+    text-shadow: 0 0 8px var(--custom-end-star-shadow, rgba(197, 162, 83, 0.35));
+    display: inline-block;
+    transition: transform 0.2s ease;
 }
 
-.thankyou-box h2 {
-    font-family: 'Product Sans', 'Google Sans', 'Poppins', 'Segoe UI', sans-serif;
-    font-size: 19px;
-    font-weight: 700;
-    color: var(--accent-color); /* Teal/Accent */
-    margin-top: 2px;
-    letter-spacing: -0.2px !important;
+.end-page-divider .star-symbol:nth-child(2) {
+    font-size: calc(var(--custom-end-star-size, 18px) + 4px);
+    margin: 0 -2px;
 }
 
-.thankyou-box p {
-    font-family: 'Product Sans', 'Google Sans', 'Poppins', 'Segoe UI', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--primary-color);
-    letter-spacing: 0 !important;
-    margin-top: 2px;
+@keyframes pulseStar {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
 }
 
 /* ==========================================================================
@@ -2018,6 +2014,44 @@ strong {
     margin-right: 12px;
 }
 
+.header-theme-container {
+    position: relative;
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    margin-right: 4px;
+}
+
+.header-theme-container .header-action-btn {
+    pointer-events: none; /* Clicks pass through to the transparent select dropdown */
+    margin: 0;
+}
+
+.header-theme-select {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.header-theme-select option {
+    background-color: var(--ui-sidebar-bg);
+    color: #fff;
+}
+
+body.light-mode .header-theme-select option {
+    background-color: #ffffff;
+    color: #0f172a;
+}
+
 .header-action-btn {
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--ui-border);
@@ -2234,7 +2268,7 @@ body.light-mode .search-replace-panel {
     display: block !important; /* Override flex layout so column-count works! */
     column-count: 2;
     column-gap: 20px;
-    column-rule: 1px dashed rgba(0, 0, 0, 0.1);
+    column-rule: var(--custom-divider-thickness) var(--custom-divider-style) var(--custom-divider-color);
     height: 100%;
 }
 
